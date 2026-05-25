@@ -9,7 +9,9 @@ import { sendEmail, createCalendarEvent, getCalendarEvents } from '@/lib/google'
 import { addGmailHistory, updateDevisEnvoi } from '@/lib/db';
 import { generateDevisPDFBase64Server } from '@/lib/pdf-server';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+function getGroq() {
+  return new Groq({ apiKey: process.env.GROQ_API_KEY! });
+}
 
 const SYSTEM_PROMPT = () => {
   const now = new Date();
@@ -326,6 +328,7 @@ export async function POST(req: NextRequest) {
       ...messages,
     ];
 
+    const groq = getGroq();
     let response = await groq.chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       messages: groqMessages,
