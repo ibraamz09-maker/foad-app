@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navigation from './Navigation';
+import AssistantButton from './AssistantButton';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -28,12 +29,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#f5f7fa]">
       <Navigation />
-      {/* Main content — offset for sidebar on desktop, bottom nav on mobile */}
       <main className="lg:ml-64 pb-24 lg:pb-6 min-h-screen">
         <div className="max-w-5xl mx-auto px-4 py-6 fade-in">
           {children}
         </div>
       </main>
+      <AssistantButton />
     </div>
   );
 }
