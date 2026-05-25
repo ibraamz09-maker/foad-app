@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/session';
-import { sendEmail } from '@/lib/google';
+import { sendEmail } from '@/lib/email';
 import { addGmailHistory, updateDevisEnvoi } from '@/lib/db';
 
 export async function POST(req: NextRequest) {

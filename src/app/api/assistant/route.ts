@@ -5,7 +5,8 @@ import {
   getAllDevis, createDevis, generateNumero, getDevisById,
   updateDevisStatut, createRdv,
 } from '@/lib/db';
-import { sendEmail, createCalendarEvent, getCalendarEvents } from '@/lib/google';
+import { sendEmail } from '@/lib/email';
+import { createCalendarEvent, getCalendarEvents } from '@/lib/google';
 import { addGmailHistory, updateDevisEnvoi } from '@/lib/db';
 import { generateDevisPDFBase64Server } from '@/lib/pdf-server';
 
