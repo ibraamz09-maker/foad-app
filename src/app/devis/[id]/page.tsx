@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import AppShell from '@/components/AppShell';
 import GmailModal from '@/components/GmailModal';
 import { downloadDevisPDF } from '@/components/PDFGenerator';
-import { Devis } from '@/lib/db';
+import type { Devis } from '@/lib/types';
 
 const STATUTS = ['brouillon', 'envoyé', 'accepté', 'refusé'] as const;
 const STATUT_LABELS: Record<string, string> = {

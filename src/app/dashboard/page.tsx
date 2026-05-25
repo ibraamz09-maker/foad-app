@@ -3,7 +3,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
-import { Devis } from '@/lib/db';
+import type { Devis } from '@/lib/types';
 
 interface CalEvent {
   id: string;

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AppShell from '@/components/AppShell';
-import { Devis } from '@/lib/db';
+import type { Devis } from '@/lib/types';
 import { differenceInDays } from 'date-fns';
 
 const STATUT_COLORS: Record<string, string> = {

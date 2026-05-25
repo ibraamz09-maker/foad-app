@@ -1,5 +1,5 @@
 'use client';
-import { LigneDevis } from '@/lib/db';
+import type { LigneDevis } from '@/lib/types';
 
 interface DevisData {
   numero: string;

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Devis } from '@/lib/db';
+import type { Devis } from '@/lib/types';
 import { getDevisPDFBase64 } from './PDFGenerator';
 
 interface Props {
