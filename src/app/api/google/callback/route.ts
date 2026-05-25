@@ -21,7 +21,8 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?google=connected`);
-  } catch {
+  } catch (e: any) {
+    console.error('Google callback error:', e?.message, e?.response?.data);
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?google=error`);
   }
 }
