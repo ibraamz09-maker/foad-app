@@ -255,6 +255,18 @@ export default function DevisDetailPage() {
             Envoyer par mail
           </button>
         </div>
+
+        {/* Delete */}
+        <button
+          onClick={async () => {
+            if (!confirm('Supprimer ce devis définitivement ?')) return;
+            await fetch(`/api/devis/${id}`, { method: 'DELETE' });
+            router.push('/devis');
+          }}
+          className="w-full text-xs text-gray-400 hover:text-[#C0392B] transition-colors py-2"
+        >
+          Supprimer ce devis
+        </button>
       </div>
     </AppShell>
   );

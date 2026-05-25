@@ -188,6 +188,11 @@ export async function generateNumero(): Promise<string> {
   return `${prefix}${String(seq).padStart(5, '0')}`;
 }
 
+export async function deleteDevis(id: number): Promise<void> {
+  await ensureInit();
+  await getClient().execute({ sql: 'DELETE FROM devis WHERE id = ?', args: [id] });
+}
+
 // ── Gmail history ──────────────────────────────────────────────
 export async function addGmailHistory(data: Omit<GmailHistory, 'id'>): Promise<void> {
   await ensureInit();
