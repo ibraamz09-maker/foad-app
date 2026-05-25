@@ -52,6 +52,21 @@ async function ensureInit(): Promise<void> {
         token_expiry TEXT,
         updated_at TEXT NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS factures (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        numero TEXT UNIQUE NOT NULL,
+        devis_id INTEGER,
+        client_nom TEXT NOT NULL,
+        client_adresse TEXT NOT NULL,
+        lignes TEXT NOT NULL,
+        montant_total REAL NOT NULL,
+        statut TEXT DEFAULT 'envoyée',
+        date_creation TEXT NOT NULL,
+        date_echeance TEXT,
+        date_paiement TEXT,
+        notes TEXT,
+        FOREIGN KEY (devis_id) REFERENCES devis(id)
+      );
       CREATE TABLE IF NOT EXISTS rdv (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         google_event_id TEXT,
@@ -191,6 +206,80 @@ export async function generateNumero(): Promise<string> {
 export async function deleteDevis(id: number): Promise<void> {
   await ensureInit();
   await getClient().execute({ sql: 'DELETE FROM devis WHERE id = ?', args: [id] });
+}
+
+// ── Factures ───────────────────────────────────────────────────
+export interface Facture {
+  id: number;
+  numero: string;
+  devis_id: number | null;
+  client_nom: string;
+  client_adresse: string;
+  lignes: LigneDevis[];
+  montant_total: number;
+  statut: 'envoyée' | 'payée' | 'en retard';
+  date_creation: string;
+  date_echeance: string | null;
+  date_paiement: string | null;
+  notes: string | null;
+}
+
+function parseFactureRow(row: Record<string, any>): Facture {
+  return { ...row, lignes: JSON.parse(row.lignes as string) } as Facture;
+}
+
+export async function generateNumeroFacture(): Promise<string> {
+  await ensureInit();
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const prefix = `FAC${year}${month}FA`;
+  const result = await getClient().execute({
+    sql: "SELECT numero FROM factures WHERE numero LIKE ? ORDER BY numero DESC LIMIT 1",
+    args: [`${prefix}%`],
+  });
+  let seq = 1;
+  if (result.rows.length > 0) {
+    const lastNum = (result.rows[0].numero as string).slice(prefix.length);
+    seq = parseInt(lastNum, 10) + 1;
+  }
+  return `${prefix}${String(seq).padStart(5, '0')}`;
+}
+
+export async function createFacture(data: Omit<Facture, 'id'>): Promise<Facture> {
+  await ensureInit();
+  const result = await getClient().execute({
+    sql: `INSERT INTO factures (numero, devis_id, client_nom, client_adresse, lignes, montant_total, statut, date_creation, date_echeance, date_paiement, notes)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [
+      data.numero, data.devis_id ?? null, data.client_nom, data.client_adresse,
+      JSON.stringify(data.lignes), data.montant_total, data.statut,
+      data.date_creation, data.date_echeance ?? null, data.date_paiement ?? null, data.notes ?? null,
+    ],
+  });
+  return (await getFactureById(Number(result.lastInsertRowid)))!;
+}
+
+export async function getAllFactures(): Promise<Facture[]> {
+  await ensureInit();
+  const result = await getClient().execute('SELECT * FROM factures ORDER BY date_creation DESC');
+  return result.rows.map(r => parseFactureRow(r as any));
+}
+
+export async function getFactureById(id: number): Promise<Facture | null> {
+  await ensureInit();
+  const result = await getClient().execute({ sql: 'SELECT * FROM factures WHERE id = ?', args: [id] });
+  if (result.rows.length === 0) return null;
+  return parseFactureRow(result.rows[0] as any);
+}
+
+export async function updateFactureStatut(id: number, statut: Facture['statut'], date_paiement?: string): Promise<void> {
+  await ensureInit();
+  if (statut === 'payée' && date_paiement) {
+    await getClient().execute({ sql: 'UPDATE factures SET statut = ?, date_paiement = ? WHERE id = ?', args: [statut, date_paiement, id] });
+  } else {
+    await getClient().execute({ sql: 'UPDATE factures SET statut = ? WHERE id = ?', args: [statut, id] });
+  }
 }
 
 // ── Gmail history ──────────────────────────────────────────────

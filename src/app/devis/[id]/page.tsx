@@ -5,6 +5,7 @@ import AppShell from '@/components/AppShell';
 import GmailModal from '@/components/GmailModal';
 import { downloadDevisPDF } from '@/components/PDFGenerator';
 import type { Devis } from '@/lib/types';
+import Link from 'next/link';
 
 const STATUTS = ['brouillon', 'envoyé', 'accepté', 'refusé'] as const;
 const STATUT_LABELS: Record<string, string> = {
@@ -255,6 +256,38 @@ export default function DevisDetailPage() {
             Envoyer par mail
           </button>
         </div>
+
+        {/* Créer facture si accepté */}
+        {devis.statut === 'accepté' && (
+          <button
+            onClick={async () => {
+              const res = await fetch('/api/factures', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  devis_id: devis.id,
+                  client_nom: devis.client_nom,
+                  client_adresse: devis.client_adresse,
+                  lignes: devis.lignes,
+                  notes: devis.notes,
+                }),
+              });
+              if (res.ok) {
+                const facture = await res.json();
+                router.push(`/factures/${facture.id}`);
+              } else {
+                showToast('Erreur lors de la création de la facture');
+              }
+            }}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <line x1="2" y1="10" x2="22" y2="10" />
+            </svg>
+            Créer la facture
+          </button>
+        )}
 
         {/* Delete */}
         <button

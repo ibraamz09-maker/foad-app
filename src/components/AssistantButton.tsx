@@ -21,15 +21,21 @@ export default function AssistantButton() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  function startListening() {
+  function toggleListening() {
+    if (listening) {
+      recognitionRef.current?.stop();
+      setListening(false);
+      return;
+    }
+
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('La reconnaissance vocale n\'est pas supportée sur ce navigateur. Utilise Chrome.');
+      alert('La reconnaissance vocale n\'est pas supportée. Utilise Chrome.');
       return;
     }
     const rec = new SpeechRecognition();
     rec.lang = 'fr-FR';
-    rec.continuous = false;
+    rec.continuous = true;
     rec.interimResults = true;
 
     rec.onstart = () => setListening(true);
@@ -41,6 +47,13 @@ export default function AssistantButton() {
     rec.onend = () => {
       setListening(false);
       recognitionRef.current = null;
+      // Auto-send when stopped manually
+      setTimeout(() => {
+        setInput(prev => {
+          if (prev.trim()) sendMessage(prev);
+          return prev;
+        });
+      }, 100);
     };
     rec.onerror = () => {
       setListening(false);
@@ -49,11 +62,6 @@ export default function AssistantButton() {
 
     recognitionRef.current = rec;
     rec.start();
-  }
-
-  function stopListening() {
-    recognitionRef.current?.stop();
-    setListening(false);
   }
 
   async function sendMessage(text?: string) {
@@ -200,16 +208,13 @@ export default function AssistantButton() {
             )}
             <div className="flex items-center gap-2">
               <button
-                onMouseDown={startListening}
-                onMouseUp={stopListening}
-                onTouchStart={startListening}
-                onTouchEnd={() => { stopListening(); setTimeout(() => { if (input.trim()) sendMessage(); }, 300); }}
+                onClick={toggleListening}
                 className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
                   listening
-                    ? 'bg-red-500 scale-110 shadow-lg'
+                    ? 'bg-red-500 scale-110 shadow-lg animate-pulse'
                     : 'bg-[#1B2A6B]/10 hover:bg-[#1B2A6B]/20'
                 }`}
-                aria-label="Maintenir pour parler"
+                aria-label={listening ? 'Arrêter l\'écoute' : 'Démarrer l\'écoute'}
               >
                 <svg className={`w-5 h-5 ${listening ? 'text-white' : 'text-[#1B2A6B]'}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z" />
@@ -239,7 +244,7 @@ export default function AssistantButton() {
                 </svg>
               </button>
             </div>
-            <p className="text-[10px] text-gray-400 text-center mt-2">Maintiens le micro pour parler · Relâche pour envoyer</p>
+            <p className="text-[10px] text-gray-400 text-center mt-2">{listening ? '🔴 Parle... appuie à nouveau pour envoyer' : 'Appuie sur le micro pour parler'}</p>
           </div>
         </div>
       )}

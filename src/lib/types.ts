@@ -30,6 +30,21 @@ export interface GmailHistory {
   date_envoi: string;
 }
 
+export interface Facture {
+  id: number;
+  numero: string;
+  devis_id: number | null;
+  client_nom: string;
+  client_adresse: string;
+  lignes: LigneDevis[];
+  montant_total: number;
+  statut: 'envoyée' | 'payée' | 'en retard';
+  date_creation: string;
+  date_echeance: string | null;
+  date_paiement: string | null;
+  notes: string | null;
+}
+
 export interface GoogleTokens {
   access_token: string;
   refresh_token: string;
